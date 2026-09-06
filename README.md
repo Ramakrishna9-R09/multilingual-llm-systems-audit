@@ -87,7 +87,8 @@ preparation script records the archive SHA-256 in its manifest.
   recorded in [`requirements.txt`](your-submission/requirements.txt) and the
   generated environment manifest.
 - **Generated artifacts:** all headline numbers trace to checked-in CSV/JSON
-  outputs, not a manually edited chart.
+  outputs, not a manually edited chart. The environment manifest is
+  intentionally informational and records the platform that ran the analysis.
 - **Continuous verification:** GitHub Actions reruns the analysis and tests on
   every push and pull request.
 - **No secrets or private traffic:** the repository contains no API keys,

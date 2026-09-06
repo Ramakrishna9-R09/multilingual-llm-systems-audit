@@ -41,5 +41,12 @@ jobs:
       - name: Run targeted tests
         run: python -m unittest discover -s your-submission/partA/tests -v
 
-      - name: Confirm generated artifacts match the committed evidence
-        run: git diff --exit-code -- your-submission/partA/results your-submission/partB/bench_reconciliation.csv your-submission/partB/capacity_results.json
+      - name: Confirm deterministic evidence matches the committed results
+        run: >-
+          git diff --exit-code --
+          your-submission/partA/results/audit_variants_gpt2.csv
+          your-submission/partA/results/corrected_metrics.csv
+          your-submission/partA/results/cross_language_ratios.csv
+          your-submission/partA/results/normalization_probe.csv
+          your-submission/partB/bench_reconciliation.csv
+          your-submission/partB/capacity_results.json
