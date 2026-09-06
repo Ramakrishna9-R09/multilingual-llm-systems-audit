@@ -4,6 +4,10 @@ This repository is a reproducible audit of the starter kit. It deliberately
 separates source data, calculations, generated results, and recommendations so
 that every numerical statement can be re-derived during a live defense.
 
+The company-supplied `starter_kit/` is deliberately local-only. Before running
+the complete audit, place the original supplied folder beside `My work/`; it is
+excluded from GitHub to avoid publishing company material.
+
 ## Quick start
 
 From the directory containing this repository:
@@ -17,7 +21,8 @@ python -m venv .venv
 .\.venv\Scripts\python.exe -m unittest discover -s '.\My work\partA\tests' -v
 ```
 
-Use a Python 3.12+ executable. If `--archive` is omitted,
+Use a Python 3.12+ executable and retain the local `starter_kit/` folder
+alongside `My work/`. If `--archive` is omitted,
 `prepare_flores.py` downloads the official FLORES-200
 archive from the source recorded in its manifest. The prepared corpus is the
 complete 1,012-sentence `devtest` split for English, Hindi, Kannada, and Tamil.
@@ -42,8 +47,9 @@ SentencePiece model from `FacebookAI/xlm-roberta-base`. Counts exclude model
 special tokens for both tokenizers. The exact local package versions are
 pinned above.
 
-No result is inferred from a chart or rounded before calculation; all tables
-are generated from the checked-in scripts.
+No result is inferred from a chart or rounded before calculation. The FLORES
+tables are generated from checked-in scripts; the audit and benchmark
+reconciliation additionally require the local company-supplied inputs.
 
 ## Single-command verification
 

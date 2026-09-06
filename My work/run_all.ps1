@@ -21,6 +21,11 @@ $prepare = Join-Path $submission 'partA\scripts\prepare_flores.py'
 $analysis = Join-Path $submission 'partA\scripts\run_analysis.py'
 $bench = Join-Path $submission 'partB\analyze_bench.py'
 $tests = Join-Path $submission 'partA\tests'
+$companyInputs = Join-Path (Split-Path $submission -Parent) 'starter_kit'
+
+if (-not (Test-Path -LiteralPath $companyInputs -PathType Container)) {
+    throw "Missing local company input folder: $companyInputs. It is intentionally excluded from GitHub; place the company-supplied starter_kit folder beside My work before running the full audit."
+}
 
 Write-Host '1/4 Preparing the FLORES corpus'
 $prepareArgs = @($prepare)

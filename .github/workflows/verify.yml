@@ -1,4 +1,4 @@
-name: Verify audit
+name: Verify portable components
 
 on:
   push:
@@ -32,21 +32,5 @@ jobs:
       - name: Install pinned dependencies
         run: python -m pip install --requirement "My work/requirements.txt"
 
-      - name: Recompute tokenizer results
-        run: python "My work/partA/scripts/run_analysis.py"
-
-      - name: Recompute serving reconciliation
-        run: python "My work/partB/analyze_bench.py"
-
-      - name: Run targeted tests
+      - name: Run data-independent tests
         run: python -m unittest discover -s "My work/partA/tests" -v
-
-      - name: Confirm deterministic evidence matches the committed results
-        run: >-
-          git diff --exit-code --
-          "My work/partA/results/audit_variants_gpt2.csv"
-          "My work/partA/results/corrected_metrics.csv"
-          "My work/partA/results/cross_language_ratios.csv"
-          "My work/partA/results/normalization_probe.csv"
-          "My work/partB/bench_reconciliation.csv"
-          "My work/partB/capacity_results.json"

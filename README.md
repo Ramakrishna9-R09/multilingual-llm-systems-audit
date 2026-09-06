@@ -12,6 +12,10 @@ runnable evidence. It separates the supplied audit target from the analysis,
 records data provenance and transformations, preserves generated results, and
 states where offline evidence stops being enough to make a production decision.
 
+The company-supplied `starter_kit/` is intentionally excluded from version
+control. It remains only in the local assignment workspace; reviewers who
+received it can place it beside `My work/` to reproduce the full audit.
+
 ## Executive summary
 
 | Decision area | Evidence-backed conclusion | Primary artifact |
@@ -45,6 +49,8 @@ flowchart LR
 
 - Python 3.12+
 - PowerShell (the scripts also run on Windows locally)
+- The company-supplied `starter_kit/` folder beside `My work/` (excluded from
+  this repository)
 - Network access only if you omit the local FLORES archive or do not already
   have the GPT-2 tokenizer encoding cached
 
@@ -68,7 +74,7 @@ preparation script records the archive SHA-256 in its manifest.
 
 | Path | Purpose |
 |---|---|
-| [`starter_kit/`](starter_kit/) | Supplied audit target, retained unchanged for comparison. |
+| Local `starter_kit/` (not committed) | Company-supplied audit target required only for the full local reproduction. |
 | [`My work/NOTEBOOK.md`](My%20work/NOTEBOOK.md) | Chronological hypothesis -> experiment -> result -> revision log, including a dead end and a later data-hygiene correction. |
 | [`My work/partA/`](My%20work/partA/) | Corpus preparation, tokenizer audit, corrected analysis, raw results, sources, and routing memo. |
 | [`My work/partB/`](My%20work/partB/) | Exact KV-cache calculation, benchmark-derived goodput, and long-context admission recommendation. |
@@ -89,10 +95,11 @@ preparation script records the archive SHA-256 in its manifest.
 - **Generated artifacts:** all headline numbers trace to checked-in CSV/JSON
   outputs, not a manually edited chart. The environment manifest is
   intentionally informational and records the platform that ran the analysis.
-- **Continuous verification:** GitHub Actions reruns the analysis and tests on
-  every push and pull request.
-- **No secrets or private traffic:** the repository contains no API keys,
-  production prompts, or user data.
+- **Portable verification:** GitHub Actions runs the public, data-independent
+  test suite on every push and pull request. The complete audit runs locally
+  only with the supplied starter kit.
+- **No company inputs:** the supplied starter kit, API keys, production
+  prompts, and user data are excluded from version control.
 
 ## Scope and limitations
 

@@ -8,6 +8,9 @@ __pycache__/
 tmp/
 *.zip
 
+# Company-supplied assignment inputs remain local and are never committed.
+starter_kit/
+
 # OS/editor metadata
 __MACOSX/
 .DS_Store
