@@ -124,5 +124,6 @@ not “pack more context.”
 .\.audit-venv\Scripts\python.exe -m unittest discover -s '.\My work\partA\tests' -v
 ```
 
-**Result.** Both tests passed: Unicode whitespace no longer makes empty words,
-and grapheme counting keeps a combining sequence together.
+**Result.** All three targeted tests passed: Unicode whitespace no longer makes
+empty words, grapheme counting keeps a combining sequence together, and the
+prepared corpus has no boundary whitespace.
