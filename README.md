@@ -3,9 +3,12 @@
 [![Verification](https://github.com/Ramakrishna9-R09/multilingual-llm-systems-audit/actions/workflows/verify.yml/badge.svg)](https://github.com/Ramakrishna9-R09/multilingual-llm-systems-audit/actions/workflows/verify.yml)
 [![Python](https://img.shields.io/badge/Python-3.12%2B-3776AB?logo=python&logoColor=white)](https://www.python.org/)
 [![Corpus](https://img.shields.io/badge/Corpus-FLORES--200-5C4EE5)](https://github.com/facebookresearch/flores)
+[![Interactive demo](https://img.shields.io/badge/Interactive_demo-GitHub_Pages-69E4DC)](https://ramakrishna9-r09.github.io/multilingual-llm-systems-audit/)
 
 > A reproducible, evidence-driven audit of multilingual tokenization, KV-cache
 > capacity, serving goodput, and launch decisions.
+
+Explore the findings in the [interactive demo](https://ramakrishna9-r09.github.io/multilingual-llm-systems-audit/).
 
 This project turns a set of plausible benchmark claims into inspectable,
 runnable evidence. It separates the supplied audit target from the analysis,

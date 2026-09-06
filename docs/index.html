@@ -1,0 +1,330 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#08111f" />
+    <meta
+      name="description"
+      content="Interactive summary of a reproducible multilingual tokenizer and LLM serving audit."
+    />
+    <title>Multilingual LLM Systems Audit</title>
+    <style>
+      :root {
+        --ink: #eef4ff;
+        --muted: #aab8d0;
+        --line: rgba(184, 207, 244, 0.18);
+        --surface: rgba(17, 31, 54, 0.74);
+        --surface-strong: #122440;
+        --navy: #08111f;
+        --blue: #74a7ff;
+        --cyan: #69e4dc;
+        --amber: #ffbf69;
+        --rose: #ff8098;
+        --shadow: 0 22px 70px rgba(0, 0, 0, 0.32);
+      }
+
+      * { box-sizing: border-box; }
+      html { scroll-behavior: smooth; }
+      body {
+        margin: 0;
+        min-width: 320px;
+        color: var(--ink);
+        background:
+          radial-gradient(circle at 7% 0%, rgba(52, 112, 202, 0.30), transparent 28rem),
+          radial-gradient(circle at 94% 13%, rgba(22, 164, 157, 0.20), transparent 25rem),
+          var(--navy);
+        font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        line-height: 1.55;
+      }
+
+      a { color: inherit; text-decoration: none; }
+      a:focus-visible, button:focus-visible { outline: 3px solid var(--cyan); outline-offset: 3px; }
+      .skip-link { position: absolute; top: -4rem; left: 1rem; z-index: 9; padding: 0.5rem 0.75rem; background: white; color: #08111f; border-radius: 0.4rem; }
+      .skip-link:focus { top: 1rem; }
+      .shell { width: min(1120px, calc(100% - 2.5rem)); margin: 0 auto; }
+
+      header { padding: 1.2rem 0; border-bottom: 1px solid var(--line); }
+      .nav { display: flex; justify-content: space-between; align-items: center; gap: 1rem; }
+      .brand { display: flex; gap: 0.75rem; align-items: center; font-weight: 750; letter-spacing: -0.02em; }
+      .brand-mark { width: 2.1rem; height: 2.1rem; display: grid; place-items: center; border: 1px solid rgba(105, 228, 220, 0.55); border-radius: 0.55rem; color: var(--cyan); font-size: 1.05rem; }
+      .nav-links { display: flex; gap: 1rem; align-items: center; color: var(--muted); font-size: 0.9rem; }
+      .nav-links a:hover { color: var(--ink); }
+
+      .hero { padding: clamp(4rem, 10vw, 7.2rem) 0 4.5rem; display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 3rem; align-items: end; }
+      .eyebrow { margin: 0 0 1.2rem; color: var(--cyan); font-size: 0.75rem; font-weight: 800; letter-spacing: 0.16em; text-transform: uppercase; }
+      h1, h2, h3, p { margin-top: 0; }
+      h1 { max-width: 12ch; margin-bottom: 1.25rem; font-size: clamp(2.9rem, 6vw, 5.5rem); line-height: 0.98; letter-spacing: -0.065em; }
+      h2 { font-size: clamp(1.75rem, 3vw, 2.5rem); letter-spacing: -0.04em; line-height: 1.08; }
+      h3 { margin-bottom: 0.5rem; font-size: 1.1rem; letter-spacing: -0.02em; }
+      .lede { max-width: 60ch; color: var(--muted); font-size: clamp(1.05rem, 1.6vw, 1.2rem); }
+      .actions { display: flex; flex-wrap: wrap; gap: 0.8rem; margin-top: 2rem; }
+      .button { display: inline-flex; align-items: center; justify-content: center; gap: 0.45rem; min-height: 2.7rem; padding: 0.65rem 1rem; border: 1px solid var(--line); border-radius: 0.55rem; font-size: 0.92rem; font-weight: 720; transition: transform 160ms ease, background 160ms ease; }
+      .button:hover { transform: translateY(-2px); }
+      .button.primary { background: var(--cyan); border-color: var(--cyan); color: #062128; }
+      .button.secondary { background: rgba(255,255,255,0.04); }
+      .hero-note { padding: 1.3rem; border: 1px solid var(--line); border-radius: 0.9rem; background: linear-gradient(145deg, rgba(18, 36, 64, 0.94), rgba(9, 20, 37, 0.8)); box-shadow: var(--shadow); }
+      .hero-note p { margin: 0; color: var(--muted); font-size: 0.93rem; }
+      .hero-note strong { display: block; margin-bottom: 0.35rem; color: var(--ink); font-size: 1.35rem; letter-spacing: -0.03em; }
+
+      .stat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; overflow: hidden; border: 1px solid var(--line); border-radius: 0.9rem; background: var(--line); }
+      .stat { padding: 1.25rem; background: rgba(8, 17, 31, 0.84); }
+      .stat b { display: block; margin-bottom: 0.25rem; color: var(--cyan); font-size: clamp(1.5rem, 3vw, 2.2rem); letter-spacing: -0.06em; }
+      .stat span { display: block; color: var(--muted); font-size: 0.82rem; }
+
+      section { padding: 5rem 0; }
+      .section-intro { display: flex; align-items: end; justify-content: space-between; gap: 2rem; margin-bottom: 1.8rem; }
+      .section-intro p { max-width: 58ch; margin-bottom: 0; color: var(--muted); }
+      .panel { border: 1px solid var(--line); border-radius: 1rem; background: var(--surface); box-shadow: var(--shadow); }
+
+      .audit-panel { overflow: hidden; }
+      .audit-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 1.25rem 1.35rem; border-bottom: 1px solid var(--line); }
+      .audit-toolbar p { margin: 0; color: var(--muted); font-size: 0.9rem; }
+      .segmented { display: flex; gap: 0.25rem; padding: 0.25rem; border: 1px solid var(--line); border-radius: 0.65rem; background: rgba(255,255,255,0.035); }
+      .segmented button { cursor: pointer; padding: 0.45rem 0.7rem; border: 0; border-radius: 0.42rem; background: transparent; color: var(--muted); font: inherit; font-size: 0.82rem; font-weight: 720; }
+      .segmented button[aria-pressed="true"] { background: var(--blue); color: #071529; }
+      .chart { padding: 1.5rem 1.35rem 1.75rem; }
+      .chart-header, .bar-row { display: grid; grid-template-columns: 6.2rem 1fr 6.3rem; gap: 0.8rem; align-items: center; }
+      .chart-header { margin-bottom: 0.75rem; color: var(--muted); font-size: 0.76rem; }
+      .chart-header span:last-child { text-align: right; }
+      .bar-row { min-height: 3.3rem; }
+      .bar-label { font-size: 0.92rem; font-weight: 700; }
+      .track { height: 0.7rem; overflow: hidden; border-radius: 1rem; background: rgba(255,255,255,0.08); }
+      .fill { height: 100%; min-width: 0.35rem; border-radius: inherit; background: linear-gradient(90deg, var(--blue), var(--cyan)); transition: width 420ms cubic-bezier(.2,.7,.2,1); }
+      .bar-row[data-language="hin_Deva"] .fill { background: linear-gradient(90deg, #9a89ff, #c7abff); }
+      .bar-row[data-language="kan_Knda"] .fill { background: linear-gradient(90deg, #ff9d62, var(--amber)); }
+      .bar-row[data-language="tam_Taml"] .fill { background: linear-gradient(90deg, #f6678e, var(--rose)); }
+      .bar-value { text-align: right; font-variant-numeric: tabular-nums; color: var(--ink); font-size: 0.87rem; }
+      .chart-caption { margin: 1.1rem 0 0; color: var(--muted); font-size: 0.88rem; }
+      .finding { color: var(--cyan); font-weight: 700; }
+
+      .three-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; }
+      .card { padding: 1.45rem; }
+      .card p { margin-bottom: 0; color: var(--muted); font-size: 0.93rem; }
+      .number { display: block; margin-bottom: 0.85rem; color: var(--amber); font-size: 2.1rem; font-weight: 800; letter-spacing: -0.06em; line-height: 1; }
+      .formula { display: block; margin: 1rem 0; padding: 0.75rem; overflow-x: auto; border-radius: 0.5rem; background: rgba(0,0,0,0.18); color: #cbe0ff; font-family: "SFMono-Regular", Consolas, monospace; font-size: 0.78rem; white-space: nowrap; }
+
+      .decision { display: grid; grid-template-columns: 0.8fr 1.2fr; gap: 1px; overflow: hidden; background: var(--line); }
+      .decision-aside { padding: 1.5rem; background: linear-gradient(150deg, #11414c, #0d2533); }
+      .decision-aside .eyebrow { color: #b8fff8; }
+      .decision-aside h2 { margin-bottom: 0; }
+      .decision-main { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: var(--line); }
+      .decision-cell { padding: 1.4rem; background: rgba(8, 17, 31, 0.94); }
+      .decision-cell p { margin: 0; color: var(--muted); font-size: 0.88rem; }
+      .decision-cell b { display: block; margin-bottom: 0.5rem; color: var(--cyan); }
+
+      footer { padding: 2.2rem 0 3.2rem; border-top: 1px solid var(--line); color: var(--muted); font-size: 0.82rem; }
+      .footer-grid { display: flex; justify-content: space-between; gap: 1.5rem; }
+      .footer-grid p { max-width: 78ch; margin: 0; }
+      .footer-grid a { color: var(--ink); text-decoration: underline; text-underline-offset: 0.2rem; }
+
+      @media (max-width: 800px) {
+        .hero, .decision { grid-template-columns: 1fr; }
+        .stat-grid, .three-grid { grid-template-columns: repeat(2, 1fr); }
+        .decision-main { grid-template-columns: 1fr; }
+      }
+      @media (max-width: 560px) {
+        .shell { width: min(100% - 1.5rem, 1120px); }
+        .nav-links a:not(.nav-repo) { display: none; }
+        .stat-grid { grid-template-columns: 1fr 1fr; }
+        .section-intro, .audit-toolbar, .footer-grid { align-items: flex-start; flex-direction: column; }
+        .chart-header, .bar-row { grid-template-columns: 5rem 1fr 4.8rem; gap: 0.5rem; }
+      }
+    </style>
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to audit summary</a>
+    <header>
+      <nav class="shell nav" aria-label="Primary navigation">
+        <a class="brand" href="#top" aria-label="Multilingual LLM Systems Audit home">
+          <span class="brand-mark" aria-hidden="true">∿</span>
+          <span>ML Systems Audit</span>
+        </a>
+        <div class="nav-links">
+          <a href="#tokenizer">Tokenizer evidence</a>
+          <a href="#serving">Serving audit</a>
+          <a class="nav-repo" href="https://github.com/Ramakrishna9-R09/multilingual-llm-systems-audit">Repository ↗</a>
+        </div>
+      </nav>
+    </header>
+
+    <main id="main">
+      <section id="top" class="shell hero">
+        <div>
+          <p class="eyebrow">Interactive project demo</p>
+          <h1>Measure before you route.</h1>
+          <p class="lede">
+            An evidence-driven audit of multilingual tokenization, KV-cache capacity,
+            serving goodput, and a bounded launch decision.
+          </p>
+          <div class="actions">
+            <a class="button primary" href="#tokenizer">Explore the evidence <span aria-hidden="true">↓</span></a>
+            <a class="button secondary" href="https://github.com/Ramakrishna9-R09/multilingual-llm-systems-audit">View source ↗</a>
+          </div>
+        </div>
+        <aside class="hero-note" aria-label="Audit scope">
+          <strong>1,012 matched sentences</strong>
+          <p>English, Hindi, Kannada, and Tamil from FLORES-200. Each row expresses the same source message across languages.</p>
+        </aside>
+      </section>
+
+      <section class="shell" aria-label="Key findings">
+        <div class="stat-grid">
+          <div class="stat"><b>7.42×</b><span>GPT-2 Hindi cost vs. English per matched sentence</span></div>
+          <div class="stat"><b>15.54×</b><span>GPT-2 Tamil cost vs. English per matched sentence</span></div>
+          <div class="stat"><b>112 KiB</b><span>fp16 KV cache required for one token</span></div>
+          <div class="stat"><b>200.9</b><span>batch-24 honest output tokens per second</span></div>
+        </div>
+      </section>
+
+      <section id="tokenizer" class="shell">
+        <div class="section-intro">
+          <div>
+            <p class="eyebrow">Part A · tokenizer audit</p>
+            <h2>Hold meaning constant, not word count.</h2>
+          </div>
+          <p>
+            A parallel sentence is a better cost denominator than a whitespace word,
+            grapheme, or byte: it approximately fixes the message being expressed.
+          </p>
+        </div>
+        <div class="panel audit-panel">
+          <div class="audit-toolbar">
+            <p id="chart-title"><b>GPT-2 BPE</b> · body tokens per matched parallel sentence</p>
+            <div class="segmented" role="group" aria-label="Tokenizer selection">
+              <button type="button" data-tokenizer="gpt2" aria-pressed="true">GPT-2 BPE</button>
+              <button type="button" data-tokenizer="xlmr" aria-pressed="false">XLM-R SentencePiece</button>
+            </div>
+          </div>
+          <div class="chart">
+            <div class="chart-header" aria-hidden="true"><span>Language</span><span>Relative scale</span><span>Tokens / sentence</span></div>
+            <div id="bars" aria-live="polite"></div>
+            <p class="chart-caption" id="chart-caption"></p>
+          </div>
+        </div>
+      </section>
+
+      <section class="shell">
+        <div class="three-grid">
+          <article class="panel card">
+            <span class="number">01</span>
+            <h3>Audit the script, not just its output</h3>
+            <p><code>split(" ")</code> creates empty words when spaces repeat. Lowercasing also mutates real inputs. Both effects were isolated with before/after measurements.</p>
+          </article>
+          <article class="panel card">
+            <span class="number">02</span>
+            <h3>Keep the harmless normalization</h3>
+            <p>NFC normalizes canonically equivalent Unicode strings. In the controlled <em>café</em> probe, raw NFD costs 4 GPT-2 tokens while NFC costs 3.</p>
+          </article>
+          <article class="panel card">
+            <span class="number">03</span>
+            <h3>Do not swap a tokenizer alone</h3>
+            <p>The XLM-R result motivates evaluating a compatible multilingual model family. Tokenizer vocabulary, embeddings, and model weights are coupled.</p>
+          </article>
+        </div>
+      </section>
+
+      <section id="serving" class="shell">
+        <div class="section-intro">
+          <div>
+            <p class="eyebrow">Part B · capacity reconciliation</p>
+            <h2>Reported throughput is not always useful throughput.</h2>
+          </div>
+          <p>
+            Long prompts inflated a prompt-plus-output rate. The audit separates it
+            from generated-token goodput and connects the drop at batch 32 to KV pressure.
+          </p>
+        </div>
+        <div class="three-grid">
+          <article class="panel card">
+            <span class="number">112 KiB</span>
+            <h3>KV cache per token</h3>
+            <span class="formula">2 × 28 × 8 × 128 × 2 B = 114,688 B</span>
+            <p>Keys and values across 28 layers, 8 KV heads, 128 dimensions, in fp16.</p>
+          </article>
+          <article class="panel card">
+            <span class="number">~25</span>
+            <h3>4,096-token sequences</h3>
+            <p>With 12.08 GB left for KV cache, the model can reserve roughly 105,329 KV tokens - about 25 full long-context sequences.</p>
+          </article>
+          <article class="panel card">
+            <span class="number">24 → 32</span>
+            <h3>Where the scheduler breaks</h3>
+            <p>At batch 24, KV utilization is 0.93 with no preemption. At 32 it is 0.97, seven sequences are preempted, and output goodput falls 13.9%.</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="shell">
+        <div class="panel decision">
+          <aside class="decision-aside">
+            <p class="eyebrow">Part C · launch choice</p>
+            <h2>Start reversible.</h2>
+          </aside>
+          <div class="decision-main">
+            <div class="decision-cell"><b>Path</b><p>Feature-flagged prompt-only style control. No SFT or second model call before validation.</p></div>
+            <div class="decision-cell"><b>Success gate</b><p>At least 65% blinded preference and ≤2% critical failures, separately for Hindi and Kannada.</p></div>
+            <div class="decision-cell"><b>Kill criterion</b><p>By week 2, stop if either language has &lt;60% preference, &gt;5% critical failures, or weak reviewer agreement.</p></div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <div class="shell footer-grid">
+        <p>
+          Built from the repository's checked-in analysis outputs. This demo contains no company starter-kit files, API keys, or private traffic. FLORES-200 and tokenizer attribution are documented in the repository.
+        </p>
+        <a href="https://github.com/Ramakrishna9-R09/multilingual-llm-systems-audit">Open repository ↗</a>
+      </div>
+    </footer>
+
+    <script>
+      const data = {
+        gpt2: {
+          title: "GPT-2 BPE",
+          caption: "Hindi costs <span class=\"finding\">7.42×</span>, Kannada <span class=\"finding\">13.58×</span>, and Tamil <span class=\"finding\">15.54×</span> English for the same matched sentence.",
+          values: [
+            ["eng_Latn", "English", 26.72, "1.00×"],
+            ["hin_Deva", "Hindi", 198.31, "7.42×"],
+            ["kan_Knda", "Kannada", 363.01, "13.58×"],
+            ["tam_Taml", "Tamil", 415.19, "15.54×"]
+          ]
+        },
+        xlmr: {
+          title: "XLM-R SentencePiece",
+          caption: "The multilingual tokenizer remains within <span class=\"finding\">1.25–1.35×</span> English on the same messages. This is a diagnostic, not a recommendation to deploy XLM-R as a generative model.",
+          values: [
+            ["eng_Latn", "English", 30.30, "1.00×"],
+            ["hin_Deva", "Hindi", 37.77, "1.25×"],
+            ["kan_Knda", "Kannada", 40.97, "1.35×"],
+            ["tam_Taml", "Tamil", 40.86, "1.35×"]
+          ]
+        }
+      };
+
+      const bars = document.getElementById("bars");
+      const title = document.getElementById("chart-title");
+      const caption = document.getElementById("chart-caption");
+      const controls = [...document.querySelectorAll("[data-tokenizer]")];
+
+      function render(tokenizer) {
+        const current = data[tokenizer];
+        const max = Math.max(...current.values.map(([, , count]) => count));
+        title.innerHTML = `<b>${current.title}</b> · body tokens per matched parallel sentence`;
+        caption.innerHTML = current.caption;
+        bars.innerHTML = current.values.map(([code, language, count, ratio]) => `
+          <div class="bar-row" data-language="${code}">
+            <span class="bar-label">${language}</span>
+            <span class="track"><span class="fill" style="width: ${(count / max) * 100}%"></span></span>
+            <span class="bar-value">${count.toFixed(2)} <small>(${ratio})</small></span>
+          </div>
+        `).join("");
+        controls.forEach((button) => button.setAttribute("aria-pressed", String(button.dataset.tokenizer === tokenizer)));
+      }
+
+      controls.forEach((button) => button.addEventListener("click", () => render(button.dataset.tokenizer)));
+      render("gpt2");
+    </script>
+  </body>
+</html>
