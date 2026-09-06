@@ -103,6 +103,28 @@
       .batch-row .fill { min-width: 0; background: linear-gradient(90deg, var(--blue), var(--cyan)); }
       .batch-row[data-risk="true"] .fill { background: linear-gradient(90deg, #f6678e, var(--rose)); }
 
+      .visual-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1rem; }
+      .plot-panel { padding: 1.35rem; overflow: hidden; }
+      .plot-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; margin-bottom: 1rem; }
+      .plot-header h3 { margin: 0 0 0.25rem; }
+      .plot-header p { max-width: 38ch; margin: 0; color: var(--muted); font-size: 0.82rem; }
+      .legend { display: flex; flex-wrap: wrap; justify-content: end; gap: 0.7rem; color: var(--muted); font-size: 0.76rem; white-space: nowrap; }
+      .legend span { display: inline-flex; align-items: center; gap: 0.35rem; }
+      .legend i { display: inline-block; width: 0.6rem; height: 0.6rem; border-radius: 50%; }
+      .legend .gpt { background: var(--rose); }
+      .legend .xlmr { background: var(--cyan); }
+      .plot-canvas { min-height: 290px; }
+      .plot-canvas svg { display: block; width: 100%; overflow: visible; }
+      .plot-canvas .axis-label { fill: var(--muted); font-size: 11px; }
+      .plot-canvas .axis-title { fill: var(--muted); font-size: 11px; letter-spacing: 0.05em; text-transform: uppercase; }
+      .plot-canvas .grid-line { stroke: rgba(184, 207, 244, 0.13); stroke-width: 1; }
+      .plot-canvas .frame-line { stroke: rgba(184, 207, 244, 0.24); stroke-width: 1; fill: none; }
+      .plot-canvas .connector { stroke: rgba(184, 207, 244, 0.36); stroke-width: 2; }
+      .plot-canvas .goodput-line { stroke: var(--cyan); fill: none; stroke-width: 3; }
+      .plot-canvas .kv-line { stroke: var(--amber); fill: none; stroke-width: 2.5; stroke-dasharray: 5 5; }
+      .plot-canvas .point { cursor: default; }
+      .plot-canvas .risk-label { fill: var(--rose); font-size: 11px; font-weight: 700; }
+
       .three-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; }
       .card { padding: 1.45rem; }
       .card p { margin-bottom: 0; color: var(--muted); font-size: 0.93rem; }
@@ -124,7 +146,7 @@
       .footer-grid a { color: var(--ink); text-decoration: underline; text-underline-offset: 0.2rem; }
 
       @media (max-width: 800px) {
-        .hero, .decision { grid-template-columns: 1fr; }
+        .hero, .decision, .visual-grid { grid-template-columns: 1fr; }
         .stat-grid, .three-grid { grid-template-columns: repeat(2, 1fr); }
         .decision-main { grid-template-columns: 1fr; }
       }
@@ -133,8 +155,9 @@
         .nav-links a:not(.nav-repo) { display: none; }
         .stat-grid { grid-template-columns: 1fr 1fr; }
         .three-grid { grid-template-columns: 1fr; }
-        .section-intro, .audit-toolbar, .footer-grid { align-items: flex-start; flex-direction: column; }
+        .section-intro, .audit-toolbar, .footer-grid, .plot-header { align-items: flex-start; flex-direction: column; }
         .chart-controls { justify-content: start; }
+        .legend { justify-content: start; }
         .chart-header, .bar-row, .batch-row { grid-template-columns: 5rem 1fr 4.8rem; gap: 0.5rem; }
       }
     </style>
@@ -217,6 +240,31 @@
             <p class="chart-caption" id="chart-caption"></p>
           </div>
         </div>
+        <div class="visual-grid" aria-label="Tokenizer chart details">
+          <article class="panel plot-panel">
+            <div class="plot-header">
+              <div>
+                <h3>Cost asymmetry by tokenizer</h3>
+                <p>One point per model for each target language. The log scale preserves the large GPT-2 gap without hiding the XLM-R result.</p>
+              </div>
+              <div class="legend" aria-label="Tokenizer legend"><span><i class="gpt"></i>GPT-2 BPE</span><span><i class="xlmr"></i>XLM-R</span></div>
+            </div>
+            <div id="ratio-plot" class="plot-canvas" role="img" aria-label="Sentence cost ratio versus English for GPT-2 BPE and XLM-R across Hindi, Kannada, Tamil, and Telugu."></div>
+          </article>
+          <article class="panel plot-panel">
+            <div class="plot-header">
+              <div>
+                <h3>Model-family diagnostic</h3>
+                <p>The lower ratio is a signal to evaluate a compatible multilingual model family - not a license to swap tokenizers under a deployed model.</p>
+              </div>
+            </div>
+            <div class="chart" style="padding: 0.25rem 0 0">
+              <div class="chart-header" aria-hidden="true"><span>Language</span><span>Relative sentence cost</span><span>GPT-2 → XLM-R</span></div>
+              <div id="reduction-bars" aria-live="polite"></div>
+              <p class="chart-caption"><span class="finding">Interpret carefully:</span> these are tokenizer-body-token counts on FLORES, not generative quality or production-latency measurements.</p>
+            </div>
+          </article>
+        </div>
       </section>
 
       <section class="shell">
@@ -265,6 +313,33 @@
             <p class="chart-caption" id="serving-caption"></p>
           </div>
         </div>
+        <div class="visual-grid" aria-label="Serving chart details">
+          <article class="panel plot-panel">
+            <div class="plot-header">
+              <div>
+                <h3>The long-context capacity cliff</h3>
+                <p>Output goodput peaks before KV cache utilization reaches its scheduler limit. The dashed series uses the right axis.</p>
+              </div>
+              <div class="legend" aria-label="Serving chart legend"><span><i class="xlmr"></i>Output goodput</span><span><i style="background: var(--amber)"></i>KV utilization</span></div>
+            </div>
+            <div id="capacity-plot" class="plot-canvas" role="img" aria-label="Long-context output goodput and KV utilization by batch size, showing a capacity drop after batch 24."></div>
+          </article>
+          <article class="panel plot-panel">
+            <div class="plot-header">
+              <div>
+                <h3>Evidence chain</h3>
+                <p>Every launch claim is connected to a measurable test and a reversible decision.</p>
+              </div>
+            </div>
+            <div class="chart" style="padding: 0.25rem 0 0">
+              <div class="batch-row"><span class="bar-label">Observe</span><span class="track"><span class="fill" style="width: 100%"></span></span><span class="bar-value">FLORES + log</span></div>
+              <div class="batch-row"><span class="bar-label">Measure</span><span class="track"><span class="fill" style="width: 76%"></span></span><span class="bar-value">CSV evidence</span></div>
+              <div class="batch-row"><span class="bar-label">Constrain</span><span class="track"><span class="fill" style="width: 52%"></span></span><span class="bar-value">Human gate</span></div>
+              <div class="batch-row" data-risk="true"><span class="bar-label">Kill if wrong</span><span class="track"><span class="fill" style="width: 32%"></span></span><span class="bar-value">Week 2</span></div>
+              <p class="chart-caption"><span class="finding">Decision principle:</span> route only after a privacy-safe production evaluation and quality/latency gates. For long contexts, cap admission at 24 requests before preemption hides queueing.</p>
+            </div>
+          </article>
+        </div>
         <div style="height: 1rem" aria-hidden="true"></div>
         <div class="three-grid">
           <article class="panel card">
@@ -310,6 +385,7 @@
       </div>
     </footer>
 
+    <script src="https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js"></script>
     <script>
       const tokenizerData = {
         gpt2: {
@@ -355,8 +431,24 @@
       const servingTitle = document.getElementById("serving-chart-title");
       const servingCaption = document.getElementById("serving-caption");
       const servingUnit = document.getElementById("serving-unit");
+      const reductionBars = document.getElementById("reduction-bars");
       let activeTokenizer = "gpt2";
       let activeDenominator = "sentence";
+
+      const sentenceRatios = [
+        { language: "Hindi", gpt2: 7.4208, xlmr: 1.2466 },
+        { language: "Kannada", gpt2: 13.5840, xlmr: 1.3522 },
+        { language: "Tamil", gpt2: 15.5366, xlmr: 1.3487 },
+        { language: "Telugu", gpt2: 12.9695, xlmr: 1.3167 }
+      ];
+      const longContextSweep = [
+        { batch: 4, goodput: 70.7, kv: 0.16, preempted: 0 },
+        { batch: 8, goodput: 112.8, kv: 0.31, preempted: 0 },
+        { batch: 16, goodput: 163.9, kv: 0.62, preempted: 0 },
+        { batch: 24, goodput: 200.9, kv: 0.93, preempted: 0 },
+        { batch: 32, goodput: 173.0, kv: 0.97, preempted: 7 },
+        { batch: 48, goodput: 162.3, kv: 0.97, preempted: 23 }
+      ];
 
       function renderTokenizer() {
         const current = tokenizerData[activeTokenizer];
@@ -378,6 +470,74 @@
         denominatorControls.forEach((button) => button.setAttribute("aria-pressed", String(button.dataset.denominator === activeDenominator)));
       }
 
+      function renderReductions() {
+        const max = Math.max(...sentenceRatios.map((row) => row.gpt2));
+        reductionBars.innerHTML = sentenceRatios.map((row) => `
+          <div class="bar-row">
+            <span class="bar-label">${row.language}</span>
+            <span class="track"><span class="fill" style="width: ${(row.gpt2 / max) * 100}%"></span></span>
+            <span class="bar-value">${row.gpt2.toFixed(2)}× → ${row.xlmr.toFixed(2)}×</span>
+          </div>
+        `).join("");
+      }
+
+      function drawRatioPlot() {
+        if (!window.d3) return;
+        const root = document.getElementById("ratio-plot");
+        const width = Math.max(root.clientWidth, 280);
+        const height = 284;
+        const margin = { top: 20, right: 32, bottom: 50, left: 82 };
+        const plotWidth = width - margin.left - margin.right;
+        const plotHeight = height - margin.top - margin.bottom;
+        const x = d3.scaleLog().domain([1, 18]).range([0, plotWidth]);
+        const y = d3.scalePoint().domain(sentenceRatios.map((row) => row.language)).range([0, plotHeight]).padding(0.6);
+        const svg = d3.select(root).selectAll("svg").data([null]).join("svg").attr("viewBox", `0 0 ${width} ${height}`).attr("height", height);
+        svg.selectAll("*").remove();
+        const frame = svg.append("g").attr("transform", `translate(${margin.left},${margin.top})`);
+        const ticks = [1, 2, 4, 8, 16];
+        frame.selectAll("line.grid-line").data(ticks).join("line").attr("class", "grid-line").attr("x1", (d) => x(d)).attr("x2", (d) => x(d)).attr("y1", 0).attr("y2", plotHeight);
+        frame.append("rect").attr("class", "frame-line").attr("width", plotWidth).attr("height", plotHeight);
+        frame.selectAll("text.language").data(sentenceRatios).join("text").attr("class", "axis-label").attr("x", -12).attr("y", (d) => y(d.language) + 4).attr("text-anchor", "end").text((d) => d.language);
+        frame.selectAll("text.tick").data(ticks).join("text").attr("class", "axis-label").attr("x", (d) => x(d)).attr("y", plotHeight + 20).attr("text-anchor", "middle").text((d) => `${d}×`);
+        frame.append("text").attr("class", "axis-title").attr("x", plotWidth / 2).attr("y", plotHeight + 43).attr("text-anchor", "middle").text("Sentence cost versus English (log scale)");
+        const row = frame.selectAll("g.ratio-row").data(sentenceRatios).join("g").attr("class", "ratio-row");
+        row.append("line").attr("class", "connector").attr("x1", (d) => x(d.xlmr)).attr("x2", (d) => x(d.gpt2)).attr("y1", (d) => y(d.language)).attr("y2", (d) => y(d.language));
+        row.append("circle").attr("class", "point").attr("cx", (d) => x(d.xlmr)).attr("cy", (d) => y(d.language)).attr("r", 5).attr("fill", "var(--cyan)").append("title").text((d) => `${d.language}: XLM-R ${d.xlmr.toFixed(2)}× English`);
+        row.append("circle").attr("class", "point").attr("cx", (d) => x(d.gpt2)).attr("cy", (d) => y(d.language)).attr("r", 5).attr("fill", "var(--rose)").append("title").text((d) => `${d.language}: GPT-2 ${d.gpt2.toFixed(2)}× English`);
+      }
+
+      function drawCapacityPlot() {
+        if (!window.d3) return;
+        const root = document.getElementById("capacity-plot");
+        const width = Math.max(root.clientWidth, 280);
+        const height = 284;
+        const margin = { top: 20, right: 52, bottom: 50, left: 46 };
+        const plotWidth = width - margin.left - margin.right;
+        const plotHeight = height - margin.top - margin.bottom;
+        const x = d3.scalePoint().domain(longContextSweep.map((row) => row.batch)).range([0, plotWidth]).padding(0.4);
+        const yGoodput = d3.scaleLinear().domain([0, 220]).range([plotHeight, 0]);
+        const yKv = d3.scaleLinear().domain([0, 1]).range([plotHeight, 0]);
+        const svg = d3.select(root).selectAll("svg").data([null]).join("svg").attr("viewBox", `0 0 ${width} ${height}`).attr("height", height);
+        svg.selectAll("*").remove();
+        const frame = svg.append("g").attr("transform", `translate(${margin.left},${margin.top})`);
+        const ticks = [0, 50, 100, 150, 200];
+        frame.selectAll("line.grid-line").data(ticks).join("line").attr("class", "grid-line").attr("x1", 0).attr("x2", plotWidth).attr("y1", (d) => yGoodput(d)).attr("y2", (d) => yGoodput(d));
+        frame.append("rect").attr("class", "frame-line").attr("width", plotWidth).attr("height", plotHeight);
+        frame.selectAll("text.left-tick").data(ticks).join("text").attr("class", "axis-label").attr("x", -9).attr("y", (d) => yGoodput(d) + 4).attr("text-anchor", "end").text((d) => d);
+        frame.selectAll("text.right-tick").data([0, 0.5, 1]).join("text").attr("class", "axis-label").attr("x", plotWidth + 9).attr("y", (d) => yKv(d) + 4).text((d) => `${Math.round(d * 100)}%`);
+        frame.selectAll("text.batch-tick").data(longContextSweep).join("text").attr("class", "axis-label").attr("x", (d) => x(d.batch)).attr("y", plotHeight + 20).attr("text-anchor", "middle").text((d) => d.batch);
+        frame.append("text").attr("class", "axis-title").attr("x", -plotHeight / 2).attr("y", -34).attr("text-anchor", "middle").attr("transform", "rotate(-90)").text("Output tokens / second");
+        frame.append("text").attr("class", "axis-title").attr("x", plotWidth + 32).attr("y", -10).attr("text-anchor", "middle").text("KV");
+        frame.append("text").attr("class", "axis-title").attr("x", plotWidth / 2).attr("y", plotHeight + 43).attr("text-anchor", "middle").text("Long-prompt batch size");
+        const goodputLine = d3.line().x((d) => x(d.batch)).y((d) => yGoodput(d.goodput));
+        const kvLine = d3.line().x((d) => x(d.batch)).y((d) => yKv(d.kv));
+        frame.append("path").datum(longContextSweep).attr("class", "goodput-line").attr("d", goodputLine);
+        frame.append("path").datum(longContextSweep).attr("class", "kv-line").attr("d", kvLine);
+        frame.selectAll("circle.goodput").data(longContextSweep).join("circle").attr("class", "point").attr("cx", (d) => x(d.batch)).attr("cy", (d) => yGoodput(d.goodput)).attr("r", 4.5).attr("fill", "var(--cyan)").append("title").text((d) => `Batch ${d.batch}: ${d.goodput.toFixed(1)} output tok/s`);
+        frame.selectAll("circle.kv").data(longContextSweep).join("circle").attr("class", "point").attr("cx", (d) => x(d.batch)).attr("cy", (d) => yKv(d.kv)).attr("r", 3.5).attr("fill", "var(--amber)").append("title").text((d) => `Batch ${d.batch}: ${Math.round(d.kv * 100)}% KV utilization`);
+        frame.selectAll("text.risk").data(longContextSweep.filter((d) => d.preempted > 0)).join("text").attr("class", "risk-label").attr("x", (d) => x(d.batch)).attr("y", (d) => yGoodput(d.goodput) - 13).attr("text-anchor", "middle").text((d) => `${d.preempted} preempted`);
+      }
+
       function renderServing(metric) {
         const current = servingData[metric];
         const max = Math.max(...current.values.map(([, value]) => value), 1);
@@ -395,7 +555,13 @@
       denominatorControls.forEach((button) => button.addEventListener("click", () => { activeDenominator = button.dataset.denominator; renderTokenizer(); }));
       servingControls.forEach((button) => button.addEventListener("click", () => renderServing(button.dataset.servingMetric)));
       renderTokenizer();
+      renderReductions();
       renderServing("goodput");
+      drawRatioPlot();
+      drawCapacityPlot();
+      const redrawPlots = () => { drawRatioPlot(); drawCapacityPlot(); };
+      new ResizeObserver(redrawPlots).observe(document.getElementById("ratio-plot"));
+      new ResizeObserver(redrawPlots).observe(document.getElementById("capacity-plot"));
     </script>
   </body>
 </html>
