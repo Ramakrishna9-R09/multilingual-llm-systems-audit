@@ -1,0 +1,9 @@
+{
+  "python": "3.12.14 (main, Aug 25 2026, 14:01:42) [MSC v.1944 64 bit (AMD64)]",
+  "platform": "Windows-11-10.0.26200-SP0",
+  "tiktoken": "0.14.0",
+  "sentencepiece": "0.2.2",
+  "gpt2_counting": "tiktoken.get_encoding('gpt2').encode(text)",
+  "xlm_roberta_counting": "SentencePieceProcessor(sentencepiece.bpe.model).encode(text, out_type=int)",
+  "special_tokens_counted": false
+}

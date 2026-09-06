@@ -1,0 +1,11 @@
+{
+  "kv_bytes_per_token": 114688,
+  "kv_kib_per_token": 112.0,
+  "managed_memory_bytes": 22080000000.0,
+  "weight_bytes": 8400000000.0,
+  "non_kv_overhead_bytes": 1600000000.0,
+  "kv_budget_bytes": 12080000000.0,
+  "max_kv_tokens": 105329.24107142857,
+  "max_4096_token_sequences_floor": 25,
+  "calculation": "28 layers * 8 KV heads * 128 head dim * 2 bytes * 2 (K,V)"
+}

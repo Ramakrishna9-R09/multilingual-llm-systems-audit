@@ -1,0 +1,22 @@
+{
+  "source_name": "FLORES-200",
+  "source_url": "https://dl.fbaipublicfiles.com/nllb/flores200_dataset.tar.gz",
+  "split": "devtest",
+  "languages": [
+    "eng_Latn",
+    "hin_Deva",
+    "kan_Knda",
+    "tam_Taml"
+  ],
+  "sentence_count_per_language": {
+    "eng_Latn": 1012,
+    "hin_Deva": 1012,
+    "kan_Knda": 1012,
+    "tam_Taml": 1012
+  },
+  "alignment": "Line i is the translation of the same source sentence in every language.",
+  "preprocessing": "UTF-8 decode, line-ending normalization, leading/trailing Unicode whitespace removal, NFC normalization; no lowercasing or interior-whitespace collapsing.",
+  "license": "CC-BY-SA-4.0 (FLORES-200)",
+  "citation": "NLLB Team et al. (2022), No Language Left Behind: Scaling Human-Centered Machine Translation.",
+  "archive_sha256": "b8b0b76783024b85797e5cc75064eb83fc5288b41e9654dabc7be6ae944011f6"
+}
