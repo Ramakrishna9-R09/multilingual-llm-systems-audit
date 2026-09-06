@@ -10,11 +10,11 @@ From the directory containing this repository:
 
 ```powershell
 python -m venv .venv
-.\.venv\Scripts\python.exe -m pip install -r your-submission\requirements.txt
-.\.venv\Scripts\python.exe your-submission\partA\scripts\prepare_flores.py --archive tmp\flores\flores200_dataset.tar.gz
-.\.venv\Scripts\python.exe your-submission\partA\scripts\run_analysis.py
-.\.venv\Scripts\python.exe your-submission\partB\analyze_bench.py
-.\.venv\Scripts\python.exe -m unittest discover -s your-submission\partA\tests -v
+.\.venv\Scripts\python.exe -m pip install -r '.\My work\requirements.txt'
+.\.venv\Scripts\python.exe '.\My work\partA\scripts\prepare_flores.py' --archive tmp\flores\flores200_dataset.tar.gz
+.\.venv\Scripts\python.exe '.\My work\partA\scripts\run_analysis.py'
+.\.venv\Scripts\python.exe '.\My work\partB\analyze_bench.py'
+.\.venv\Scripts\python.exe -m unittest discover -s '.\My work\partA\tests' -v
 ```
 
 Use a Python 3.12+ executable. If `--archive` is omitted,
@@ -50,7 +50,7 @@ are generated from the checked-in scripts.
 After installing the requirements, the same sequence can be run from PowerShell:
 
 ```powershell
-.\your-submission\run_all.ps1 -Python .\.venv\Scripts\python.exe -FloresArchive .\tmp\flores\flores200_dataset.tar.gz
+& '.\My work\run_all.ps1' -Python .\.venv\Scripts\python.exe -FloresArchive .\tmp\flores\flores200_dataset.tar.gz
 ```
 
 Omit `-FloresArchive` only when network access to the official FLORES archive

@@ -27,26 +27,26 @@ jobs:
         with:
           python-version: '3.12'
           cache: pip
-          cache-dependency-path: your-submission/requirements.txt
+          cache-dependency-path: My work/requirements.txt
 
       - name: Install pinned dependencies
-        run: python -m pip install --requirement your-submission/requirements.txt
+        run: python -m pip install --requirement "My work/requirements.txt"
 
       - name: Recompute tokenizer results
-        run: python your-submission/partA/scripts/run_analysis.py
+        run: python "My work/partA/scripts/run_analysis.py"
 
       - name: Recompute serving reconciliation
-        run: python your-submission/partB/analyze_bench.py
+        run: python "My work/partB/analyze_bench.py"
 
       - name: Run targeted tests
-        run: python -m unittest discover -s your-submission/partA/tests -v
+        run: python -m unittest discover -s "My work/partA/tests" -v
 
       - name: Confirm deterministic evidence matches the committed results
         run: >-
           git diff --exit-code --
-          your-submission/partA/results/audit_variants_gpt2.csv
-          your-submission/partA/results/corrected_metrics.csv
-          your-submission/partA/results/cross_language_ratios.csv
-          your-submission/partA/results/normalization_probe.csv
-          your-submission/partB/bench_reconciliation.csv
-          your-submission/partB/capacity_results.json
+          "My work/partA/results/audit_variants_gpt2.csv"
+          "My work/partA/results/corrected_metrics.csv"
+          "My work/partA/results/cross_language_ratios.csv"
+          "My work/partA/results/normalization_probe.csv"
+          "My work/partB/bench_reconciliation.csv"
+          "My work/partB/capacity_results.json"

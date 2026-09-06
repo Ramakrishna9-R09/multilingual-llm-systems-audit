@@ -37,7 +37,7 @@ I downloaded that archive and prepared exactly the four complete devtest files:
 
 ```powershell
 curl.exe -L --fail --silent --show-error -o tmp\flores\flores200_dataset.tar.gz https://dl.fbaipublicfiles.com/nllb/flores200_dataset.tar.gz
-.\.audit-venv\Scripts\python.exe your-submission\partA\scripts\prepare_flores.py --archive tmp\flores\flores200_dataset.tar.gz
+.\.audit-venv\Scripts\python.exe '.\My work\partA\scripts\prepare_flores.py' --archive tmp\flores\flores200_dataset.tar.gz
 ```
 
 **Result.** English, Hindi, Kannada, and Tamil each have 1,012 aligned lines.
@@ -54,7 +54,7 @@ see `partA/data/flores200_devtest/manifest.json`.
 provided sample and FLORES, holding the GPT-2 tokenizer and casing fixed:
 
 ```powershell
-.\.audit-venv\Scripts\python.exe your-submission\partA\scripts\run_analysis.py
+.\.audit-venv\Scripts\python.exe '.\My work\partA\scripts\run_analysis.py'
 ```
 
 **Result and revision.** It is not harmless. English sample mean fertility goes
@@ -108,7 +108,7 @@ generation speed and should scale linearly with batch.
 **Experiment.**
 
 ```powershell
-.\.audit-venv\Scripts\python.exe your-submission\partB\analyze_bench.py
+.\.audit-venv\Scripts\python.exe '.\My work\partB\analyze_bench.py'
 ```
 
 **Result and revision.** For batch 24, `reported_tok_s` is exactly
@@ -121,7 +121,7 @@ not “pack more context.”
 ## 2026-09-06 - Verification
 
 ```powershell
-.\.audit-venv\Scripts\python.exe -m unittest discover -s your-submission\partA\tests -v
+.\.audit-venv\Scripts\python.exe -m unittest discover -s '.\My work\partA\tests' -v
 ```
 
 **Result.** Both tests passed: Unicode whitespace no longer makes empty words,
