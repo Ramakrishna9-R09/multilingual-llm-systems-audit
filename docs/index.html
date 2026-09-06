@@ -80,7 +80,8 @@
       .audit-panel { overflow: hidden; }
       .audit-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 1.25rem 1.35rem; border-bottom: 1px solid var(--line); }
       .audit-toolbar p { margin: 0; color: var(--muted); font-size: 0.9rem; }
-      .segmented { display: flex; gap: 0.25rem; padding: 0.25rem; border: 1px solid var(--line); border-radius: 0.65rem; background: rgba(255,255,255,0.035); }
+      .chart-controls { display: flex; flex-wrap: wrap; justify-content: end; gap: 0.55rem; }
+      .segmented { display: flex; flex-wrap: wrap; gap: 0.25rem; max-width: 100%; padding: 0.25rem; border: 1px solid var(--line); border-radius: 0.65rem; background: rgba(255,255,255,0.035); }
       .segmented button { cursor: pointer; padding: 0.45rem 0.7rem; border: 0; border-radius: 0.42rem; background: transparent; color: var(--muted); font: inherit; font-size: 0.82rem; font-weight: 720; }
       .segmented button[aria-pressed="true"] { background: var(--blue); color: #071529; }
       .chart { padding: 1.5rem 1.35rem 1.75rem; }
@@ -98,6 +99,9 @@
       .bar-value { text-align: right; font-variant-numeric: tabular-nums; color: var(--ink); font-size: 0.87rem; }
       .chart-caption { margin: 1.1rem 0 0; color: var(--muted); font-size: 0.88rem; }
       .finding { color: var(--cyan); font-weight: 700; }
+      .batch-row { display: grid; grid-template-columns: 6.2rem 1fr 6.3rem; gap: 0.8rem; min-height: 3.3rem; align-items: center; }
+      .batch-row .fill { min-width: 0; background: linear-gradient(90deg, var(--blue), var(--cyan)); }
+      .batch-row[data-risk="true"] .fill { background: linear-gradient(90deg, #f6678e, var(--rose)); }
 
       .three-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; }
       .card { padding: 1.45rem; }
@@ -128,8 +132,10 @@
         .shell { width: min(100% - 1.5rem, 1120px); }
         .nav-links a:not(.nav-repo) { display: none; }
         .stat-grid { grid-template-columns: 1fr 1fr; }
+        .three-grid { grid-template-columns: 1fr; }
         .section-intro, .audit-toolbar, .footer-grid { align-items: flex-start; flex-direction: column; }
-        .chart-header, .bar-row { grid-template-columns: 5rem 1fr 4.8rem; gap: 0.5rem; }
+        .chart-controls { justify-content: start; }
+        .chart-header, .bar-row, .batch-row { grid-template-columns: 5rem 1fr 4.8rem; gap: 0.5rem; }
       }
     </style>
   </head>
@@ -192,9 +198,17 @@
         <div class="panel audit-panel">
           <div class="audit-toolbar">
             <p id="chart-title"><b>GPT-2 BPE</b> · body tokens per matched parallel sentence</p>
-            <div class="segmented" role="group" aria-label="Tokenizer selection">
-              <button type="button" data-tokenizer="gpt2" aria-pressed="true">GPT-2 BPE</button>
-              <button type="button" data-tokenizer="xlmr" aria-pressed="false">XLM-R SentencePiece</button>
+            <div class="chart-controls">
+              <div class="segmented" role="group" aria-label="Tokenizer selection">
+                <button type="button" data-tokenizer="gpt2" aria-pressed="true">GPT-2 BPE</button>
+                <button type="button" data-tokenizer="xlmr" aria-pressed="false">XLM-R SentencePiece</button>
+              </div>
+              <div class="segmented" role="group" aria-label="Tokenizer denominator selection">
+                <button type="button" data-denominator="sentence" aria-pressed="true">Matched sentence</button>
+                <button type="button" data-denominator="word" aria-pressed="false">Whitespace word</button>
+                <button type="button" data-denominator="grapheme" aria-pressed="false">Grapheme</button>
+                <button type="button" data-denominator="byte" aria-pressed="false">UTF-8 byte</button>
+              </div>
             </div>
           </div>
           <div class="chart">
@@ -236,6 +250,22 @@
             from generated-token goodput and connects the drop at batch 32 to KV pressure.
           </p>
         </div>
+        <div class="panel audit-panel">
+          <div class="audit-toolbar">
+            <p id="serving-chart-title"><b>Generated-token goodput</b> · long-prompt benchmark sweep</p>
+            <div class="segmented" role="group" aria-label="Serving metric selection">
+              <button type="button" data-serving-metric="goodput" aria-pressed="true">Output goodput</button>
+              <button type="button" data-serving-metric="kv" aria-pressed="false">KV utilization</button>
+              <button type="button" data-serving-metric="preempted" aria-pressed="false">Preemptions</button>
+            </div>
+          </div>
+          <div class="chart">
+            <div class="chart-header" aria-hidden="true"><span>Batch size</span><span>Relative scale</span><span id="serving-unit">Output tok/s</span></div>
+            <div id="serving-bars" aria-live="polite"></div>
+            <p class="chart-caption" id="serving-caption"></p>
+          </div>
+        </div>
+        <div style="height: 1rem" aria-hidden="true"></div>
         <div class="three-grid">
           <article class="panel card">
             <span class="number">112 KiB</span>
@@ -281,53 +311,91 @@
     </footer>
 
     <script>
-      const data = {
+      const tokenizerData = {
         gpt2: {
           title: "GPT-2 BPE",
-          caption: "Hindi costs <span class=\"finding\">7.42×</span>, Kannada <span class=\"finding\">13.58×</span>, Tamil <span class=\"finding\">15.54×</span>, and Telugu <span class=\"finding\">12.97×</span> English for the same matched sentence.",
-          values: [
-            ["eng_Latn", "English", 26.72, "1.00×"],
-            ["hin_Deva", "Hindi", 198.31, "7.42×"],
-            ["kan_Knda", "Kannada", 363.01, "13.58×"],
-            ["tam_Taml", "Tamil", 415.19, "15.54×"],
-            ["tel_Telu", "Telugu", 346.59, "12.97×"]
-          ]
+          values: {
+            sentence: [["eng_Latn", "English", 26.7233], ["hin_Deva", "Hindi", 198.3083], ["kan_Knda", "Kannada", 363.0099], ["tam_Taml", "Tamil", 415.1887], ["tel_Telu", "Telugu", 346.5889]],
+            word: [["eng_Latn", "English", 1.2348], ["hin_Deva", "Hindi", 7.8262], ["kan_Knda", "Kannada", 22.8178], ["tam_Taml", "Tamil", 25.0475], ["tel_Telu", "Telugu", 20.7078]],
+            grapheme: [["eng_Latn", "English", 0.2049], ["hin_Deva", "Hindi", 2.3347], ["kan_Knda", "Kannada", 4.0651], ["tam_Taml", "Tamil", 4.2133], ["tel_Telu", "Telugu", 4.5809]],
+            byte: [["eng_Latn", "English", 0.2047], ["hin_Deva", "Hindi", 0.5947], ["kan_Knda", "Kannada", 0.9788], ["tam_Taml", "Tamil", 0.9965], ["tel_Telu", "Telugu", 0.9918]]
+          }
         },
         xlmr: {
           title: "XLM-R SentencePiece",
-          caption: "The multilingual tokenizer remains within <span class=\"finding\">1.25–1.35×</span> English on the same messages. This is a diagnostic, not a recommendation to deploy XLM-R as a generative model.",
-          values: [
-            ["eng_Latn", "English", 30.30, "1.00×"],
-            ["hin_Deva", "Hindi", 37.77, "1.25×"],
-            ["kan_Knda", "Kannada", 40.97, "1.35×"],
-            ["tam_Taml", "Tamil", 40.86, "1.35×"],
-            ["tel_Telu", "Telugu", 39.89, "1.32×"]
-          ]
+          values: {
+            sentence: [["eng_Latn", "English", 30.2974], ["hin_Deva", "Hindi", 37.7678], ["kan_Knda", "Kannada", 40.9674], ["tam_Taml", "Tamil", 40.8636], ["tel_Telu", "Telugu", 39.8933]],
+            word: [["eng_Latn", "English", 1.4000], ["hin_Deva", "Hindi", 1.4905], ["kan_Knda", "Kannada", 2.5751], ["tam_Taml", "Tamil", 2.4652], ["tel_Telu", "Telugu", 2.3835]],
+            grapheme: [["eng_Latn", "English", 0.2323], ["hin_Deva", "Hindi", 0.4447], ["kan_Knda", "Kannada", 0.4588], ["tam_Taml", "Tamil", 0.4147], ["tel_Telu", "Telugu", 0.5273]],
+            byte: [["eng_Latn", "English", 0.2321], ["hin_Deva", "Hindi", 0.1133], ["kan_Knda", "Kannada", 0.1105], ["tam_Taml", "Tamil", 0.0981], ["tel_Telu", "Telugu", 0.1142]]
+          }
         }
+      };
+
+      const denominatorMeta = {
+        sentence: { label: "body tokens per matched parallel sentence", valueLabel: "Tokens / sentence", digits: 2, caption: "<span class=\"finding\">Use this for routing:</span> it approximately holds message meaning constant across languages." },
+        word: { label: "body tokens per whitespace word", valueLabel: "Tokens / word", digits: 3, caption: "A whitespace word is useful diagnostically, but it is language-specific and does not hold semantic payload constant." },
+        grapheme: { label: "body tokens per grapheme cluster", valueLabel: "Tokens / grapheme", digits: 3, caption: "Grapheme clusters approximate visible characters; they are diagnostic, not the routing denominator." },
+        byte: { label: "body tokens per UTF-8 byte", valueLabel: "Tokens / UTF-8 byte", digits: 3, caption: "Bytes describe transport representation. They are not a fair proxy for the meaning a user asked to express." }
+      };
+
+      const servingData = {
+        goodput: { title: "Generated-token goodput", unit: "Output tok/s", digits: 1, caption: "<span class=\"finding\">Batch 24 is the long-context operating point:</span> output goodput peaks at 200.9 tok/s before falling 13.9% at batch 32.", values: [[4, 70.7], [8, 112.8], [16, 163.9], [24, 200.9], [32, 173.0], [48, 162.3]] },
+        kv: { title: "KV-cache utilization", unit: "KV utilization", digits: 0, caption: "KV utilization reaches 93% at batch 24 and pins at 97% once batch 32 is admitted - evidence of capacity, not compute, saturation.", values: [[4, 0.16], [8, 0.31], [16, 0.62], [24, 0.93], [32, 0.97], [48, 0.97]] },
+        preempted: { title: "Sequence preemptions", unit: "Preempted sequences", digits: 0, caption: "Preemptions are zero through batch 24, then rise to <span class=\"finding\">7 at batch 32</span> and 23 at batch 48. This confirms scheduler pressure.", values: [[4, 0], [8, 0], [16, 0], [24, 0], [32, 7], [48, 23]] }
       };
 
       const bars = document.getElementById("bars");
       const title = document.getElementById("chart-title");
       const caption = document.getElementById("chart-caption");
-      const controls = [...document.querySelectorAll("[data-tokenizer]")];
+      const tokenizerControls = [...document.querySelectorAll("[data-tokenizer]")];
+      const denominatorControls = [...document.querySelectorAll("[data-denominator]")];
+      const servingControls = [...document.querySelectorAll("[data-serving-metric]")];
+      const servingBars = document.getElementById("serving-bars");
+      const servingTitle = document.getElementById("serving-chart-title");
+      const servingCaption = document.getElementById("serving-caption");
+      const servingUnit = document.getElementById("serving-unit");
+      let activeTokenizer = "gpt2";
+      let activeDenominator = "sentence";
 
-      function render(tokenizer) {
-        const current = data[tokenizer];
-        const max = Math.max(...current.values.map(([, , count]) => count));
-        title.innerHTML = `<b>${current.title}</b> · body tokens per matched parallel sentence`;
-        caption.innerHTML = current.caption;
-        bars.innerHTML = current.values.map(([code, language, count, ratio]) => `
+      function renderTokenizer() {
+        const current = tokenizerData[activeTokenizer];
+        const meta = denominatorMeta[activeDenominator];
+        const values = current.values[activeDenominator];
+        const max = Math.max(...values.map(([, , count]) => count));
+        const english = values[0][2];
+        title.innerHTML = `<b>${current.title}</b> · ${meta.label}`;
+        caption.innerHTML = meta.caption;
+        document.querySelector(".chart-header span:last-child").textContent = meta.valueLabel;
+        bars.innerHTML = values.map(([code, language, count]) => `
           <div class="bar-row" data-language="${code}">
             <span class="bar-label">${language}</span>
             <span class="track"><span class="fill" style="width: ${(count / max) * 100}%"></span></span>
-            <span class="bar-value">${count.toFixed(2)} <small>(${ratio})</small></span>
+            <span class="bar-value">${count.toFixed(meta.digits)} <small>(${(count / english).toFixed(2)}×)</small></span>
           </div>
         `).join("");
-        controls.forEach((button) => button.setAttribute("aria-pressed", String(button.dataset.tokenizer === tokenizer)));
+        tokenizerControls.forEach((button) => button.setAttribute("aria-pressed", String(button.dataset.tokenizer === activeTokenizer)));
+        denominatorControls.forEach((button) => button.setAttribute("aria-pressed", String(button.dataset.denominator === activeDenominator)));
       }
 
-      controls.forEach((button) => button.addEventListener("click", () => render(button.dataset.tokenizer)));
-      render("gpt2");
+      function renderServing(metric) {
+        const current = servingData[metric];
+        const max = Math.max(...current.values.map(([, value]) => value), 1);
+        servingTitle.innerHTML = `<b>${current.title}</b> · long-prompt benchmark sweep`;
+        servingUnit.textContent = current.unit;
+        servingCaption.innerHTML = current.caption;
+        servingBars.innerHTML = current.values.map(([batch, value]) => {
+          const display = metric === "kv" ? `${Math.round(value * 100)}%` : value.toFixed(current.digits);
+          return `<div class="batch-row" data-risk="${batch >= 32}"><span class="bar-label">Batch ${batch}</span><span class="track"><span class="fill" style="width: ${(value / max) * 100}%"></span></span><span class="bar-value">${display}</span></div>`;
+        }).join("");
+        servingControls.forEach((button) => button.setAttribute("aria-pressed", String(button.dataset.servingMetric === metric)));
+      }
+
+      tokenizerControls.forEach((button) => button.addEventListener("click", () => { activeTokenizer = button.dataset.tokenizer; renderTokenizer(); }));
+      denominatorControls.forEach((button) => button.addEventListener("click", () => { activeDenominator = button.dataset.denominator; renderTokenizer(); }));
+      servingControls.forEach((button) => button.addEventListener("click", () => renderServing(button.dataset.servingMetric)));
+      renderTokenizer();
+      renderServing("goodput");
     </script>
   </body>
 </html>
