@@ -2,10 +2,10 @@
 
 **Decision.** Do not use `REPORT_v0.md`'s “Hindi is 6×” estimate to route or
 budget traffic. On 1,012 aligned FLORES devtest sentences, GPT-2 BPE requires
-198.31 Hindi tokens per matched sentence versus 26.72 English (7.42×); Kannada
-and Tamil are 13.58× and 15.54×. In the same experiment, the multilingual
-XLM-R SentencePiece tokenizer needs only 1.25×, 1.35×, and 1.35× English,
-respectively. The full result and exact commands are reproducible in this
+198.31 Hindi tokens per matched sentence versus 26.72 English (7.42×); Kannada,
+Tamil, and Telugu are 13.58×, 15.54×, and 12.97×. In the same experiment, the
+multilingual XLM-R SentencePiece tokenizer needs only 1.25×, 1.35×, 1.35×, and
+1.32× English, respectively. The full result and exact commands are reproducible in this
 repository.
 
 **Recommendation.** Make “tokenizer/model family supports the target scripts”

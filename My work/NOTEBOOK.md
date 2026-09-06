@@ -33,14 +33,14 @@ the same message in each language.
 because it is gated in this environment. I did not use an unverified mirror.
 
 **Revision and command.** The FLORES documentation links Meta's public archive.
-I downloaded that archive and prepared exactly the four complete devtest files:
+I downloaded that archive and prepared exactly the five complete devtest files:
 
 ```powershell
 curl.exe -L --fail --silent --show-error -o tmp\flores\flores200_dataset.tar.gz https://dl.fbaipublicfiles.com/nllb/flores200_dataset.tar.gz
 .\.audit-venv\Scripts\python.exe '.\My work\partA\scripts\prepare_flores.py' --archive tmp\flores\flores200_dataset.tar.gz
 ```
 
-**Result.** English, Hindi, Kannada, and Tamil each have 1,012 aligned lines.
+**Result.** English, Hindi, Kannada, Tamil, and Telugu each have 1,012 aligned lines.
 Leading/trailing Unicode whitespace is removed as file-boundary noise; interior
 whitespace remains unchanged. The archive SHA-256 is
 `b8b0b76783024b85797e5cc75064eb83fc5288b41e9654dabc7be6ae944011f6`;

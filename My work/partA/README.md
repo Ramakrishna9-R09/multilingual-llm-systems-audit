@@ -2,9 +2,9 @@
 
 ## A1. Evaluation corpus
 
-The evaluation corpus is the complete **FLORES-200 devtest** split for four
+The evaluation corpus is the complete **FLORES-200 devtest** split for five
 line-aligned languages: English (`eng_Latn`), Hindi (`hin_Deva`), Kannada
-(`kan_Knda`), and Tamil (`tam_Taml`). Each file has 1,012 sentences; row *i*
+(`kan_Knda`), Tamil (`tam_Taml`), and Telugu (`tel_Telu`). Each file has 1,012 sentences; row *i*
 in every file translates the same source content. This is the crucial control:
 when the denominator is a parallel sentence, the semantic payload is held
 approximately constant across languages.
@@ -102,10 +102,10 @@ which is multilingual. Full-precision, machine-readable results are in
 
 ### Headline metric: tokens per parallel sentence
 
-| Tokenizer | English | Hindi | Kannada | Tamil |
-|---|---:|---:|---:|---:|
-| GPT-2 BPE | 26.72 | 198.31 (7.42×) | 363.01 (13.58×) | 415.19 (15.54×) |
-| XLM-R SentencePiece | 30.30 | 37.77 (1.25×) | 40.97 (1.35×) | 40.86 (1.35×) |
+| Tokenizer | English | Hindi | Kannada | Tamil | Telugu |
+|---|---:|---:|---:|---:|---:|
+| GPT-2 BPE | 26.72 | 198.31 (7.42×) | 363.01 (13.58×) | 415.19 (15.54×) | 346.59 (12.97×) |
+| XLM-R SentencePiece | 30.30 | 37.77 (1.25×) | 40.97 (1.35×) | 40.86 (1.35×) | 39.89 (1.32×) |
 
 For a routing-and-cost decision, **tokens per parallel sentence** is the single
 number to lead with. Each numerator is the billed/computed unit and each
@@ -122,10 +122,12 @@ better substitute for a matched request.
 | GPT-2 Hindi | 7.826 | 2.335 | 0.595 |
 | GPT-2 Kannada | 22.818 | 4.065 | 0.979 |
 | GPT-2 Tamil | 25.047 | 4.213 | 0.997 |
+| GPT-2 Telugu | 20.708 | 4.581 | 0.992 |
 | XLM-R English | 1.400 | 0.232 | 0.232 |
 | XLM-R Hindi | 1.491 | 0.445 | 0.113 |
 | XLM-R Kannada | 2.575 | 0.459 | 0.110 |
 | XLM-R Tamil | 2.465 | 0.415 | 0.098 |
+| XLM-R Telugu | 2.384 | 0.527 | 0.114 |
 
 The denominator materially changes the apparent gap - e.g., GPT-2 Hindi is
 6.34× English by whitespace word but 7.42× by matched sentence. This is why

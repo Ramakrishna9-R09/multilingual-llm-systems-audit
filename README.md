@@ -23,7 +23,7 @@ received it can place it beside `My work/` to reproduce the full audit.
 
 | Decision area | Evidence-backed conclusion | Primary artifact |
 |---|---|---|
-| Multilingual routing | Compare **body tokens per matched parallel sentence**, not words or code points. On the 1,012-sentence corpus, GPT-2 BPE costs 7.42x English for Hindi, 13.58x for Kannada, and 15.54x for Tamil. | [Part A memo](My%20work/partA/memo.md) |
+| Multilingual routing | Compare **body tokens per matched parallel sentence**, not words or code points. On the 1,012-sentence corpus, GPT-2 BPE costs 7.42x English for Hindi, 13.58x for Kannada, 15.54x for Tamil, and 12.97x for Telugu. | [Part A memo](My%20work/partA/memo.md) |
 | Tokenizer choice | XLM-R's multilingual tokenizer is only 1.25-1.35x English on the same messages. This motivates evaluating a compatible multilingual model family - not swapping tokenizers under a deployed model. | [Corrected metrics](My%20work/partA/results/corrected_metrics.csv) |
 | Long-context serving | Each token requires 112 KiB of fp16 KV cache. The L4 estimate is about 25 concurrent 4,096-token sequences; the supplied log begins preempting at batch 32. | [Capacity reconciliation](My%20work/partB/calculations.md) |
 | Capacity reporting | Batch 24's 1,607.4 reported tok/s includes prompt tokens. Its generated-token goodput is 200.9 tok/s, independently derived two ways. | [Benchmark reconciliation](My%20work/partB/bench_reconciliation.csv) |
@@ -34,7 +34,7 @@ received it can place it beside `My work/` to reproduce the full audit.
 ```mermaid
 flowchart LR
     A[Supplied report and logs] --> B[Reproduce baseline]
-    C[FLORES-200: 1,012 aligned sentences x 4 languages] --> D[Normalize boundary whitespace and NFC]
+    C[FLORES-200: 1,012 aligned sentences x 5 languages] --> D[Normalize boundary whitespace and NFC]
     D --> E[Count GPT-2 and XLM-R body tokens]
     B --> F[Isolate each claimed flaw]
     E --> G[Choose decision denominator]
@@ -88,7 +88,7 @@ preparation script records the archive SHA-256 in its manifest.
 ## Reproducibility and quality controls
 
 - **Meaning-aligned evaluation:** complete FLORES-200 `devtest` translations in
-  English, Hindi, Kannada, and Tamil, with 1,012 lines per language.
+  English, Hindi, Kannada, Tamil, and Telugu, with 1,012 lines per language.
 - **Explicit transformations:** UTF-8 decoding, line-ending normalization,
   boundary-whitespace removal, and NFC normalization; no lowercasing or
   interior-whitespace collapsing.

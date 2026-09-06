@@ -9,11 +9,11 @@ number from first principles.
 
 1. `REPORT_v0.md` was treated as a hypothesis rather than an authority.
 2. I replaced its 10-line smoke test with 1,012 line-aligned FLORES devtest
-   translations in English, Hindi, Kannada, and Tamil, then preserved case and
+   translations in English, Hindi, Kannada, Tamil, and Telugu, then preserved case and
    counted body tokens only.
 3. GPT-2's per-parallel-sentence cost gap is much larger than the report said
-   (Hindi 7.42x; Kannada 13.58x; Tamil 15.54x), while XLM-R's tokenizer is
-   1.25-1.35x. That supports evaluating a multilingual *model family*, not
+   (Hindi 7.42x; Kannada 13.58x; Tamil 15.54x; Telugu 12.97x), while XLM-R's
+   tokenizer is 1.25-1.35x. That supports evaluating a multilingual *model family*, not
    swapping a tokenizer beneath a deployed model.
 4. The serving report mixed prompt-plus-output throughput with generated-token
    goodput. Batch 24's 1,607.4 reported tok/s is 200.9 output tok/s; the

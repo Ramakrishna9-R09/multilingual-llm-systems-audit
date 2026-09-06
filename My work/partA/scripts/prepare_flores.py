@@ -21,7 +21,7 @@ from pathlib import Path
 
 
 SOURCE_URL = "https://dl.fbaipublicfiles.com/nllb/flores200_dataset.tar.gz"
-LANGUAGES = ("eng_Latn", "hin_Deva", "kan_Knda", "tam_Taml")
+LANGUAGES = ("eng_Latn", "hin_Deva", "kan_Knda", "tam_Taml", "tel_Telu")
 EXPECTED_SENTENCES = 1012
 
 

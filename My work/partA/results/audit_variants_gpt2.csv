@@ -23,3 +23,7 @@ flores200_devtest,tam_Taml,intern_exact,True,True,420194,16875,25.12700532444814
 flores200_devtest,tam_Taml,whitespace_split_fixed,True,False,420194,16775,25.252269044440176,25.048822652757078
 flores200_devtest,tam_Taml,case_preserved_literal_space,False,True,420171,16875,25.125554610684553,24.89902222222222
 flores200_devtest,tam_Taml,case_and_whitespace_fixed,False,False,420171,16775,25.250813651258785,25.047451564828613
+flores200_devtest,tel_Telu,intern_exact,True,True,350848,17177,20.56561213365397,20.42545264015835
+flores200_devtest,tel_Telu,whitespace_split_fixed,True,False,350848,16938,20.82984689602662,20.713661589325778
+flores200_devtest,tel_Telu,case_preserved_literal_space,False,True,350748,17177,20.559786102325468,20.419630901787272
+flores200_devtest,tel_Telu,case_and_whitespace_fixed,False,False,350748,16938,20.823996930978748,20.707757704569605

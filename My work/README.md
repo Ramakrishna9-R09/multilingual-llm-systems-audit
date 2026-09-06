@@ -25,7 +25,8 @@ Use a Python 3.12+ executable and retain the local `starter_kit/` folder
 alongside `My work/`. If `--archive` is omitted,
 `prepare_flores.py` downloads the official FLORES-200
 archive from the source recorded in its manifest. The prepared corpus is the
-complete 1,012-sentence `devtest` split for English, Hindi, Kannada, and Tamil.
+complete 1,012-sentence `devtest` split for English, Hindi, Kannada, Tamil,
+and Telugu.
 It contains translations aligned by line number.
 
 ## Layout

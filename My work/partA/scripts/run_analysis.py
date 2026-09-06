@@ -23,7 +23,7 @@ import tiktoken
 PART_A = Path(__file__).resolve().parents[1]
 REPOSITORY_ROOT = PART_A.parent
 WORKSPACE_ROOT = REPOSITORY_ROOT.parent
-LANGUAGES = ("eng_Latn", "hin_Deva", "kan_Knda", "tam_Taml")
+LANGUAGES = ("eng_Latn", "hin_Deva", "kan_Knda", "tam_Taml", "tel_Telu")
 XLMR_SPM_URL = "https://huggingface.co/FacebookAI/xlm-roberta-base/resolve/main/sentencepiece.bpe.model"
 XLMR_SPM_PATH = PART_A / "data" / "tokenizers" / "xlm-roberta-base" / "sentencepiece.bpe.model"
 

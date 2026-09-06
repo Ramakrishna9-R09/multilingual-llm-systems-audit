@@ -26,7 +26,7 @@ high-risk cases.
 This uses **zero A100 training days** and no second model call. At 100,000
 requests/day, a 60-token instruction adds 6 million input tokens/day. A
 rewriter adds a sequential inference pass; synthetic SFT burns the window on
-an artifact the available reviewer cannot validate in four languages. Keep the
+an artifact the available reviewer cannot validate across all six target languages. Keep the
 28 A100-days as contingency.
 
 ## Success metric and gate
