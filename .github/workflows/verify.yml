@@ -1,0 +1,45 @@
+name: Verify audit
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: verify-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+          cache-dependency-path: your-submission/requirements.txt
+
+      - name: Install pinned dependencies
+        run: python -m pip install --requirement your-submission/requirements.txt
+
+      - name: Recompute tokenizer results
+        run: python your-submission/partA/scripts/run_analysis.py
+
+      - name: Recompute serving reconciliation
+        run: python your-submission/partB/analyze_bench.py
+
+      - name: Run targeted tests
+        run: python -m unittest discover -s your-submission/partA/tests -v
+
+      - name: Confirm generated artifacts match the committed evidence
+        run: git diff --exit-code -- your-submission/partA/results your-submission/partB/bench_reconciliation.csv your-submission/partB/capacity_results.json

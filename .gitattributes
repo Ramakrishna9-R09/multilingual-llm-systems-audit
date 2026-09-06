@@ -1,0 +1,12 @@
+# Keep source, documentation, corpus text, and manifests platform-independent.
+*.py text eol=lf
+*.md text eol=lf
+*.json text eol=lf
+*.txt text eol=lf
+*.yml text eol=lf
+
+# csv.writer produces CRLF records across supported platforms.
+*.csv text eol=crlf
+
+# Preserve binary tokenizer assets exactly.
+*.model binary
